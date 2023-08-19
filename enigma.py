@@ -23,7 +23,9 @@ class Rotor:
         self.position = self.set_position()
         self.offset = self.set_offset()
         self.wiring = self.generate_wiring()
-        
+        self.notch = 27
+
+
     def get_rotor(self):
         return {
         "Rotor-position": self.position,
@@ -33,10 +35,11 @@ class Rotor:
     
     def turn(self):
         self.position += 1
-        if self.position == 27:
-            self.position = 0
-        self.wiring.insert(0, self.wiring.pop())
-        return self.position
+        if self.position == self.notch:
+            self.position = 1
+            self.wiring.insert(0, self.wiring.pop())
+            return True
+        return False
     
     def encrypt(self, signal):
         wiring = self.wiring
@@ -140,11 +143,20 @@ class EnigmaMachine:
 
     def encrypt(self, signal):
         signal = self.plugboard.swap_with_plugboard(signal)
-        for rotor in self.rotors:
+        turn_next_rotor = False
+        for index, rotor in enumerate(self.rotors):
             signal = rotor.encrypt(signal)
+            
+            if turn_next_rotor:
+                rotor_turned = rotor.turn()
+                print(f"Rotating the rotor: {rotor.name} to {rotor.position}")
+                turn_next_rotor = rotor_turned
+
             if rotor.name == "rotor1":
-                rotor.turn()
-                print(f"Rotating the rotor: {rotor.name} to {rotor.position} Type: {type(rotor)}")
+                rotor_turned = rotor.turn()
+                print(f"Rotating the rotor: {rotor.name} to {rotor.position}")
+                if rotor_turned:
+                    turn_next_rotor = True
         signal = self.reflector.reflect_signal(signal)
         self.rotors.reverse()
         for rotor in self.rotors:
