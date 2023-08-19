@@ -23,22 +23,20 @@ class Rotor:
         self.position = self.set_position()
         self.offset = self.set_offset()
         self.wiring = self.generate_wiring()
-        self.rotation = self.set_rotation()
         
     def get_rotor(self):
         return {
         "Rotor-position": self.position,
         "Rotor-offset": self.offset,
-        "rotation": self.rotation,
         "Wiring": ''.join(self.wiring)
         }
     
     def turn(self):
-        self.rotation += 1
-        if self.rotation == 27:
-            self.rotation = 0
+        self.position += 1
+        if self.position == 27:
+            self.position = 0
         self.wiring.insert(0, self.wiring.pop())
-        return self.rotation
+        return self.position
     
     def encrypt(self, signal):
         wiring = self.wiring
@@ -71,11 +69,6 @@ class Rotor:
             wiring.append(i_list[pattern_number])
             i_list.pop(pattern_number)    
         return wiring
-
-    @staticmethod
-    def set_rotation():
-        rotation = random.randint(1, 26)
-        return rotation
 
 
 class Plugboard:
@@ -132,13 +125,10 @@ class Reflector:
 class EnigmaMachine:
     def __init__(self, num_rotors):
         self.plugboard = Plugboard()
-        self.rotors = []
-        for i in range(1, num_rotors + 1):
-            rotor = Rotor()
-            rotor.name = "rotor" + str(i)
-            self.rotors.append(rotor)
-            print(f"rotor created. {rotor.name} ")
+        self.rotors = [Rotor() for _ in range(num_rotors)]
         self.reflector = Reflector()
+        for index, rotor in enumerate(self.rotors):
+            rotor.name = f"rotor{index + 1}"
 
     def get_engima(self):
         enigma_config = {
@@ -152,7 +142,9 @@ class EnigmaMachine:
         signal = self.plugboard.swap_with_plugboard(signal)
         for rotor in self.rotors:
             signal = rotor.encrypt(signal)
-            rotor.turn()
+            if rotor.name == "rotor1":
+                rotor.turn()
+                print(f"Rotating the rotor: {rotor.name} to {rotor.position} Type: {type(rotor)}")
         signal = self.reflector.reflect_signal(signal)
         self.rotors.reverse()
         for rotor in self.rotors:
@@ -164,8 +156,9 @@ class EnigmaMachine:
         signal = self.plugboard.swap_with_plugboard(signal)
         for rotor in self.rotors:
             signal = rotor.decrypt(signal)
-            rotor.turn()
-            print(f"Rotor rotated. {rotor.position}")
+            if rotor.name == "rotor1":
+                rotor.turn()
+                print(f"Rotating the rotor: {rotor.name} to {rotor.position}")
         signal = self.reflector.reflect_signal(signal)
         self.rotors.reverse()
         for rotor in self.rotors:
@@ -206,7 +199,6 @@ def main():
                 for i, rotor_config in enumerate(rotor_configs):
                     enigma_3.rotors[i].position = rotor_config["Rotor-position"]
                     enigma_3.rotors[i].offset = rotor_config["Rotor-offset"]
-                    enigma_3.rotors[i].rotation = rotor_config["rotation"]
                     enigma_3.rotors[i].wiring = list(rotor_config["Wiring"])
                 letter_mapping = config['reflector']
                 enigma_3.reflector.letter_mapping = letter_mapping
