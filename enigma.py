@@ -21,7 +21,7 @@ class Rotor:
         self.name = str()
         self.signal = list()
         self.position = self.set_position()
-        self.offset = self.set_offset()
+        self.offset = random.randint(1, 2)
         self.wiring = self.generate_wiring()
         self.notch = 27
 
@@ -30,48 +30,67 @@ class Rotor:
         return {
         "Rotor-position": self.position,
         "Rotor-offset": self.offset,
-        "Wiring": ''.join(self.wiring)
+        "Wiring": self.wiring
         }
+    
+    def encryption_turn(self):
+        self.position += 1
+        if self.position == self.notch:
+            self.position = 1
+            return True
+        return False
+    
+    def decryption_turn(self):
+        self.position -= 1
+        if self.position == 0:
+            self.position = self.notch
+            return True
+        return False
     
     def turn(self):
         self.position += 1
         if self.position == self.notch:
             self.position = 1
-            self.wiring.insert(0, self.wiring.pop())
             return True
         return False
     
     def encrypt(self, signal):
         wiring = self.wiring
-        signal_alphabetical_order = ord(signal) - 96
-        new_signal = wiring[signal_alphabetical_order - 1]
+        # print(f"{self.name} signal input is {signal}")
+        signal_alphabetical_order = ord(signal) - 96 + self.position - 1
+        if signal_alphabetical_order > 26:
+            signal_alphabetical_order = 1
+        if signal_alphabetical_order < 1:
+            signal_alphabetical_order = 26
+        new_signal = wiring.get(signal_alphabetical_order)
+        # print(f"{self.name} signal output is {new_signal}")
         return new_signal
 
     def decrypt(self, signal):
         wiring = self.wiring
-        signal_alphabetical_order = ord(signal) - 96
-        new_signal = wiring[signal_alphabetical_order - 1]
+        # print(f"{self.name} signal input is {signal}")
+        signal_alphabetical_order = ord(signal) - 96 - self.position + 1
+        if signal_alphabetical_order > 26:
+            signal_alphabetical_order = 1
+        if signal_alphabetical_order < 1:
+            signal_alphabetical_order = 26
+        new_signal = wiring.get(str(signal_alphabetical_order))
+        # print(f"{self.name} signal output is {new_signal}")
         return new_signal
 
-    @staticmethod
-    def set_position():
+    def set_position(self):
         position = 1
+        # for i in position:
+        #     self.turn()
         return position
 
-    @staticmethod
-    def set_offset():
-        offset = random.randint(1, 2)
-        return offset
-
-    @staticmethod
-    def generate_wiring():
-        wiring = []
-        i_list = list("abcdefghijklmnopqrstuvwxyz")
-        while len(i_list) > 0:
-            pattern_number = random.randint(0, (len(i_list)-1))
-            wiring.append(i_list[pattern_number])
-            i_list.pop(pattern_number)    
-        return wiring
+    def generate_wiring(self):
+        wiring = {}
+        alphabets = list('abcdefghijklmnopqrstuvwxyz')
+        keys = range(1, 27)
+        for key, alphabet in zip(keys, alphabets):
+            wiring[key] = alphabet
+        return wiring   
 
 
 class Plugboard:
@@ -142,40 +161,47 @@ class EnigmaMachine:
         return json.dumps(enigma_config, indent=4)
 
     def encrypt(self, signal):
-        signal = self.plugboard.swap_with_plugboard(signal)
+        print(f"Input letter: {signal}")
+        # signal = self.plugboard.swap_with_plugboard(signal)
+        # print(f"Swapped with the plugboard: {signal}")
         turn_next_rotor = False
-        for index, rotor in enumerate(self.rotors):
+        for rotor in self.rotors:
+            if rotor.name == "rotor1" or turn_next_rotor:
+                turn_next_rotor = rotor.encryption_turn()
+                print(f"Incrementing position: {rotor.name} to {rotor.position}")
             signal = rotor.encrypt(signal)
-            
-            if turn_next_rotor:
-                rotor_turned = rotor.turn()
-                print(f"Rotating the rotor: {rotor.name} to {rotor.position}")
-                turn_next_rotor = rotor_turned
-
-            if rotor.name == "rotor1":
-                rotor_turned = rotor.turn()
-                print(f"Rotating the rotor: {rotor.name} to {rotor.position}")
-                if rotor_turned:
-                    turn_next_rotor = True
+            print(f"Encrypted by the {rotor.name}: {signal}")
         signal = self.reflector.reflect_signal(signal)
+        print(f"Reflected letter: {signal}")
         self.rotors.reverse()
         for rotor in self.rotors:
             signal = rotor.encrypt(signal)
-        signal = self.plugboard.swap_with_plugboard(signal)
+            print(f"Encrypted 2nd time by {rotor.name}: {signal}")
+        # signal = self.plugboard.swap_with_plugboard(signal)
+        # print(f"Swapped with plugboad: {signal}")
+        self.rotors.reverse()
         return signal
     
     def decrypt(self, signal):
-        signal = self.plugboard.swap_with_plugboard(signal)
+        print(f"Input letter: {signal}")
+        # signal = self.plugboard.swap_with_plugboard(signal)
+        # print(f"Swapped with the plugboard: {signal}")
+        turn_next_rotor = False
         for rotor in self.rotors:
+            if rotor.name == "rotor1" or turn_next_rotor:
+                turn_next_rotor = rotor.turn()
+                print(f"decrementing position: {rotor.name} to {rotor.position}")
             signal = rotor.decrypt(signal)
-            if rotor.name == "rotor1":
-                rotor.turn()
-                print(f"Rotating the rotor: {rotor.name} to {rotor.position}")
+            print(f"Decrypted by the {rotor.name}: {signal}")
         signal = self.reflector.reflect_signal(signal)
+        print(f"Reflected letter: {signal}")
         self.rotors.reverse()
         for rotor in self.rotors:
             signal = rotor.decrypt(signal)
-        signal = self.plugboard.swap_with_plugboard(signal)
+            print(f"Encrypted 2nd time by {rotor.name}: {signal}")
+        # signal = self.plugboard.swap_with_plugboard(signal)
+        # print(f"Swapped with plugboad: {signal}")
+        self.rotors.reverse()
         return signal
 
 
@@ -193,8 +219,6 @@ def main():
         match option:
             case 1:
                 enigma_3 = EnigmaMachine(num_rotors=3)
-                with open('enigma_config.json', 'w') as file:
-                    file.write(enigma_3.get_engima())
                 print("Please input a signal to encrypt:")
                 signals = input().lower()
                 encrypted_signals = ''
@@ -202,6 +226,8 @@ def main():
                     encrypted_signals += enigma_3.encrypt(signal)
                 print(
                     f"The encrypted signal for {signals} is {encrypted_signals}")
+                with open('enigma_config.json', 'w') as file:
+                    file.write(enigma_3.get_engima())
             case 2:
                 with open('enigma_config.json', 'r') as file:
                     config = json.load(file)
@@ -211,15 +237,21 @@ def main():
                 for i, rotor_config in enumerate(rotor_configs):
                     enigma_3.rotors[i].position = rotor_config["Rotor-position"]
                     enigma_3.rotors[i].offset = rotor_config["Rotor-offset"]
-                    enigma_3.rotors[i].wiring = list(rotor_config["Wiring"])
+                    enigma_3.rotors[i].wiring = rotor_config["Wiring"]
                 letter_mapping = config['reflector']
                 enigma_3.reflector.letter_mapping = letter_mapping
 
                 print("Please input a signal to decrypt:")
                 signals = input().lower()
+                signals_processed = list(signals)
+                signals_processed.reverse()
+                signals = ''.join(signals_processed)
                 decrypted_signals = ''
                 for signal in signals:
                     decrypted_signals += enigma_3.decrypt(signal)
+                    processed_decrypted_signals = list(decrypted_signals)
+                    processed_decrypted_signals.reverse()
+                    decrypted_signals = ''.join(processed_decrypted_signals)
                 print(
                     f"The encrypted signal for {signals} is {decrypted_signals}")
             case 3:
