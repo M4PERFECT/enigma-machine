@@ -1,0 +1,72 @@
+{
+    "plugboard": {
+        "t": "q",
+        "q": "t",
+        "w": "o",
+        "o": "w",
+        "p": "i",
+        "i": "p",
+        "y": "e",
+        "e": "y",
+        "n": "s",
+        "s": "n",
+        "c": "d",
+        "d": "c",
+        "u": "m",
+        "m": "u",
+        "z": "h",
+        "h": "z",
+        "g": "x",
+        "x": "g",
+        "v": "b",
+        "b": "v"
+    },
+    "rotors": [
+        {
+            "Rotor-position": 1,
+            "Rotor-offset": 1,
+            "rotation": 4,
+            "Wiring": "ibmvoeprcnaltyuwhxdgjzqskf"
+        },
+        {
+            "Rotor-position": 1,
+            "Rotor-offset": 2,
+            "rotation": 7,
+            "Wiring": "idcxojsymnefqzvuhktalgpwbr"
+        },
+        {
+            "Rotor-position": 1,
+            "Rotor-offset": 2,
+            "rotation": 15,
+            "Wiring": "zpbftwumovjcrnkxglshaieqdy"
+        }
+    ],
+    "reflector": {
+        "u": "v",
+        "v": "u",
+        "e": "z",
+        "z": "e",
+        "a": "x",
+        "x": "a",
+        "o": "y",
+        "y": "o",
+        "l": "s",
+        "s": "l",
+        "m": "h",
+        "h": "m",
+        "q": "g",
+        "g": "q",
+        "f": "j",
+        "j": "f",
+        "c": "b",
+        "b": "c",
+        "i": "n",
+        "n": "i",
+        "k": "p",
+        "p": "k",
+        "r": "w",
+        "w": "r",
+        "d": "t",
+        "t": "d"
+    }
+}
