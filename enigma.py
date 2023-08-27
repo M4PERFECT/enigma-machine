@@ -2,11 +2,12 @@
 
 import random
 import json
+import string
 # need to fix the position independence of the rotor's encryption/decryption
 
 def generate_wiring(num_pairs=10):
     wiring = {}
-    alphabet = list('abcdefghijklmnopqrstuvwxyz')
+    alphabet = list('ABCDEFGHIJKLMNOPQRSTUVWXYZ')
     keys = random.sample(alphabet, k=num_pairs)
     values_list = [letter for letter in alphabet if letter not in keys]
     values = random.sample(values_list, k=num_pairs)
@@ -15,6 +16,8 @@ def generate_wiring(num_pairs=10):
         wiring[value] = key
     return wiring
 
+def shift_dict(d, shift):
+    return {k+shift:v for k,v in d.items()}
 
 class Rotor:
     def __init__(self):
@@ -56,25 +59,29 @@ class Rotor:
     
     def encrypt(self, signal):
         wiring = self.wiring
+        position = str(self.position)
+        new_signal = wiring[position][signal]
         # print(f"{self.name} signal input is {signal}")
-        signal_alphabetical_order = ord(signal) - 96 + self.position - 1
-        if signal_alphabetical_order > 26:
-            signal_alphabetical_order = 1
-        if signal_alphabetical_order < 1:
-            signal_alphabetical_order = 26
-        new_signal = wiring.get(signal_alphabetical_order)
+        # signal_alphabetical_order = ord(signal) - 96 + self.position - 1
+        # if signal_alphabetical_order > 26:
+        #     signal_alphabetical_order = 1
+        # if signal_alphabetical_order < 1:
+        #     signal_alphabetical_order = 26
+        # new_signal = wiring.get(signal_alphabetical_order)
         # print(f"{self.name} signal output is {new_signal}")
         return new_signal
 
     def decrypt(self, signal):
         wiring = self.wiring
+        position = str(self.position)
+        new_signal = wiring[position][signal]
         # print(f"{self.name} signal input is {signal}")
-        signal_alphabetical_order = ord(signal) - 96 - self.position + 1
-        if signal_alphabetical_order > 26:
-            signal_alphabetical_order = 1
-        if signal_alphabetical_order < 1:
-            signal_alphabetical_order = 26
-        new_signal = wiring.get(str(signal_alphabetical_order))
+        # signal_alphabetical_order = ord(signal) - 96 - self.position + 1
+        # if signal_alphabetical_order > 26:
+        #     signal_alphabetical_order = 1
+        # if signal_alphabetical_order < 1:
+        #     signal_alphabetical_order = 26
+        # new_signal = wiring.get(str(signal_alphabetical_order))
         # print(f"{self.name} signal output is {new_signal}")
         return new_signal
 
@@ -85,11 +92,12 @@ class Rotor:
         return position
 
     def generate_wiring(self):
+        base_wiring = list(string.ascii_uppercase)
+        random.shuffle(base_wiring)
         wiring = {}
-        alphabets = list('abcdefghijklmnopqrstuvwxyz')
-        keys = range(1, 27)
-        for key, alphabet in zip(keys, alphabets):
-            wiring[key] = alphabet
+        for position in range(1, 27):
+            wiring[str(position)] = {string.ascii_uppercase[i]: base_wiring[i] for i in range(26)}
+            base_wiring = base_wiring[1:] + [base_wiring[0]] 
         return wiring   
 
 
@@ -131,7 +139,8 @@ class Reflector:
         return
     
     def reflect_signal(self, signal):
-        return self.letter_mapping.get(signal, signal)
+        # signal = signal.lower()
+        return self.letter_mapping.get(signal, signal).upper()
     
     @staticmethod
     def set_signal():
@@ -190,7 +199,7 @@ class EnigmaMachine:
         for rotor in self.rotors:
             if rotor.name == "rotor1" or turn_next_rotor:
                 turn_next_rotor = rotor.turn()
-                print(f"decrementing position: {rotor.name} to {rotor.position}")
+                print(f"Incrementing position: {rotor.name} to {rotor.position}")
             signal = rotor.decrypt(signal)
             print(f"Decrypted by the {rotor.name}: {signal}")
         signal = self.reflector.reflect_signal(signal)
@@ -220,7 +229,7 @@ def main():
             case 1:
                 enigma_3 = EnigmaMachine(num_rotors=3)
                 print("Please input a signal to encrypt:")
-                signals = input().lower()
+                signals = input().upper()
                 encrypted_signals = ''
                 for signal in signals:
                     encrypted_signals += enigma_3.encrypt(signal)
@@ -242,10 +251,10 @@ def main():
                 enigma_3.reflector.letter_mapping = letter_mapping
 
                 print("Please input a signal to decrypt:")
-                signals = input().lower()
-                signals_processed = list(signals)
-                signals_processed.reverse()
-                signals = ''.join(signals_processed)
+                signals = input().upper()
+                # signals_processed = list(signals)
+                # signals_processed.reverse()
+                # signals = ''.join(signals_processed)
                 decrypted_signals = ''
                 for signal in signals:
                     decrypted_signals += enigma_3.decrypt(signal)

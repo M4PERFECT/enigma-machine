@@ -1,4 +1,8 @@
+from os import remove
+from readline import append_history_file
+import signal
 from turtle import position
+from webbrowser import get
 
 
 def turn():
@@ -43,3 +47,23 @@ def decryption():
      new_signal = wiring.get(signal_alphabetical_order)
      print(new_signal)
      print(signal_alphabetical_order)
+
+def reflector_encryption(){
+     wiring = {"y": "z","z": "y","l": "q","q": "l","v": "t","t": "v","d": "f","f": "d","h": "e","e": "h","n": "g","g": "n","r": "m","m": "r","k": "s","s": "k","a": "j","j": "a","x": "w","w": "x","p": "i","i": "p","o": "c","c": "o","b": "u","u": "b"}
+     signal = "L"
+     signal = signal.lower()
+     print(wiring.get(signal, signal))
+
+}
+
+def setting_wiring(){
+     orignal = tuple(input())
+     alpha = ['E', 'A', 'K', 'B', 'M', 'C', 'F', 'D', 'L', 'E', 'G', 'F', 'D', 'G', 'Q', 'H', 'V', 'I', 'Z', 'J', 'N', 'K', 'T', 'L', 'O', 'M', 'W', 'N', 'Y', 'O', 'H', 'P', 'X', 'Q', 'U', 'R', 'S', 'S', 'P', 'T', 'A', 'U', 'I', 'V', 'B', 'W', 'R', 'X', 'C', 'Y', 'J', 'Z']
+     while i <= len(alpha):
+          for a in alpha:
+               b = a
+               b.append()
+               print(b)
+     
+     print(orignal) 
+     }
